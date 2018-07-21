@@ -1,0 +1,22 @@
+{
+    "name": "gquemener/fpp",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Gildas Quéméner",
+            "email": "gildas.quemener@gmail.com"
+        }
+    ],
+    "require": {
+        "nikic/php-parser": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "GildasQ\\Fpp\\": "src/"
+        }
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^2.12"
+    }
+}
