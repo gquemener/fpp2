@@ -10,13 +10,9 @@ final class Lexer
 {
     public function analyse(string $input)
     {
-        return array_map(
-            [$this, 'tokenize'],
-            array_filter(array_map(
-                'trim',
-                preg_split('/([ ;,])/', $input, -1, PREG_SPLIT_DELIM_CAPTURE)
-            ))
-        );
+        $words = array_filter(array_map('trim', preg_split('/([ ;,(){}])/', $input, -1, PREG_SPLIT_DELIM_CAPTURE)));
+
+        return array_map([$this, 'tokenize'], $words);
     }
 
     private function tokenize(string $word): Token
@@ -40,10 +36,15 @@ final class Lexer
                 $class = Token\EndArgumentsList::class;
                 break;
 
-            case 'string':
-            case 'int':
-            case 'float':
-            case 'bool':
+            case '(':
+                $class = Token\BeginList::class;
+                break;
+
+            case ')':
+                $class = Token\EndList::class;
+                break;
+
+            case 1 === preg_match('/^(?:string|int|double|float|bool)(?:\[\])?$/', $word):
                 $class = Token\TypeHint::class;
                 break;
 
@@ -58,6 +59,10 @@ final class Lexer
 
             case ';':
                 $class = Token\SemiColon::class;
+                break;
+
+            case 'deriving':
+                $class = Token\Deriving::class;
                 break;
 
             default:

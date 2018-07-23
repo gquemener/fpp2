@@ -11,6 +11,9 @@ final class Comma extends AbstractToken
 {
     public function nextTokenChecker(): Lexer\TokenChecker
     {
-        return Lexer\NextToken::any();
+        return Lexer\NextToken::instanceOf(
+            TypeHint::class,
+            Other::class
+        );
     }
 }

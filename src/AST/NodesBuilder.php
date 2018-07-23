@@ -9,12 +9,17 @@ use GildasQ\Fpp\AST\Node\NamespaceNode;
 use PhpParser\Builder;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Expr;
+use GildasQ\Fpp\Parser\ClassNode;
 
 final class NodesBuilder
 {
     private $nodes = [];
     private $currentStatementType;
-    private $currentNamespaceNode;
+    private $currentNamespace;
+    private $currentClass;
+    private $listHasBegun = false;
+    private $deriving = false;
+    private $list = [];
     private $ready = false;
 
     public function add(Token $token): void
@@ -36,13 +41,15 @@ final class NodesBuilder
         return $this->ready;
     }
 
-    public function nodes(): array
+    public function nodes(): ClassNode
     {
         $nodes = $this->nodes;
+        $visitors = $this->visitors;
         $this->nodes = [];
         $this->ready = false;
+        $this->visitors = [];
 
-        return $nodes;
+        return new ClassNode($nodes, $visitors);
     }
 
     private function withStatementTypeToken(Token\StatementType $token): void
@@ -58,7 +65,15 @@ final class NodesBuilder
                 break;
 
             case 'data':
-                $this->currentClass = new Builder\Class_($token->value());
+                if (!$this->currentClass) {
+                    $this->currentClass = new Builder\Class_($token->value());
+                }
+                if ($this->listHasBegun) {
+                    if ($this->deriving) {
+                        $derivingClass = sprintf('GildasQ\Fpp\Parser\Deriving\%s', $token->value());
+                        $this->visitors[] = new $derivingClass();
+                    }
+                }
 
             default:
                 break;
@@ -123,11 +138,29 @@ final class NodesBuilder
     {
     }
 
-    public function withSemiColonToken(Token\SemiColon $token): void
+    private function withSemiColonToken(Token\SemiColon $token): void
     {
         if ('data' === $this->currentStatementType) {
             $this->prepareForYielding();
         }
+    }
+
+    private function withDerivingToken(Token\Deriving $token): void
+    {
+        $this->deriving = true;
+    }
+
+    private function withBeginListToken(Token\BeginList $token): void
+    {
+        $this->listHasBegun = true;
+        $this->list = [];
+    }
+
+    private function withEndListToken(Token\EndList $token): void
+    {
+        $this->listHasBegun = false;
+        $this->deriving = false;
+        $this->list = [];
     }
 
     private function prepareForYielding(): void

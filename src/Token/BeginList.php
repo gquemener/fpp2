@@ -7,13 +7,10 @@ namespace GildasQ\Fpp\Token;
 use GildasQ\Fpp\Token\AbstractToken;
 use GildasQ\Fpp\Lexer;
 
-final class EndArgumentsList extends AbstractToken
+final class BeginList extends AbstractToken
 {
     public function nextTokenChecker(): Lexer\TokenChecker
     {
-        return Lexer\NextToken::instanceof(
-            SemiColon::class,
-            Deriving::class
-        );
+        return Lexer\NextToken::any();
     }
 }

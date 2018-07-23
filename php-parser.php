@@ -13,9 +13,11 @@ namespace App;
 
 class Foo
 {
-    public function __construct(string \$name)
+    private \$bar;
+
+    public static function fromArray(array \$data): self
     {
-        \$this->name = \$name;
+        return new self(\$data['bar']);
     }
 }
 CODE;
@@ -23,7 +25,7 @@ CODE;
 $parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 try {
     $ast = $parser->parse($code);
-    die(var_dump($ast[1]->stmts[0]->stmts[0]));
+    die(var_dump($ast[1]->stmts[0]->stmts[1]->stmts[0]));
 } catch (Error $error) {
     echo "Parse error: {$error->getMessage()}\n";
 }
